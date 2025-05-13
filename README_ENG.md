@@ -1,7 +1,5 @@
 # C++ Video Event Processing with Docker — Distributed Broker System
 
----
-
 🇷🇺 *Если ищешь русскую версию смотри ->* [README.md](README.md)
 
 # StreamBroker — A Lightweight Message Broker in C++
@@ -60,8 +58,6 @@ This allows us to test how the broker handles concurrent writes, buffer overflow
 - Simulate a real data pipeline for a video platform
 - Containerize all services using Docker for modularity and scalability
 
----
-
 ## Technical Requirements
 
 1. **Message Queue**  
@@ -90,8 +86,6 @@ This allows us to test how the broker handles concurrent writes, buffer overflow
 
 9. **Concurrency and Thread Safety**  
    Ensure correct behavior during concurrent reads/writes with protection against race conditions and deadlocks.
-
----
 
 ## Microservice Descriptions
 
