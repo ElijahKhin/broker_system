@@ -1,9 +1,9 @@
-#include "RingBuffer.hpp"
+#include <broker_system/RingBuffer.hpp>
 
 template <typename T>
 RingBuffer<T>::RingBuffer(size_t capacity) {
 	if (capacity < 1) {
-		throw std::invalid_argument("Capacity must be at greater than 0");
+		throw std::invalid_argument(ERROR_RINGBUF_SIZE);
 	}
 	capacity_ = capacity + 1;
 	buffer_.resize(capacity_);

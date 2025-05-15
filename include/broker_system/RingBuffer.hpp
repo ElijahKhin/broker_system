@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 
+#define ERROR_RINGBUF_SIZE "Capacity must be greater than 0"
 template <typename T>
 class RingBuffer {
 	public:
