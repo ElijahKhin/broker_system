@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <broker_system/RingBuffer.hpp>
+#include <broker_system/RingBuffer.h>
 #include <sstream>
 
 static inline void getFilledBuffer(RingBuffer<int>& rbuf, size_t n) {

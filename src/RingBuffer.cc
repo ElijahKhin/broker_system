@@ -1,4 +1,4 @@
-#include <broker_system/RingBuffer.hpp>
+#include <broker_system/RingBuffer.h>
 
 template <typename T>
 RingBuffer<T>::RingBuffer(size_t capacity) {
@@ -64,4 +64,12 @@ void RingBuffer<T>::show() const {
   std::cout << '\n';
 }
 
-template class RingBuffer<int>;
+template <typename T>
+RingBuffer<T>::Iterator RingBuffer<T>::begin() {
+	Iterator(buffer_, front_, count_, capacity_);
+};
+
+template <typename T>
+RingBuffer<T>::Iterator RingBuffer<T>::end() {
+	Iterator(buffer_, back_, 0, capacity_);
+};

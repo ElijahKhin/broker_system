@@ -1,7 +1,7 @@
-#include "RingBuffer.hpp"
+#include <broker_system/RingBuffer.hpp>
 
 int main() {
-  RingBuffer<int> rbuf(0);
+  RingBuffer<int> rbuf(100);
   for (int i = 0; i < 4; ++i) {
     if (!rbuf.push(i)) {
       std::cout << "full: " << i << '\n';

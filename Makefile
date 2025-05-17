@@ -5,9 +5,10 @@ INCLUDE_DIR := include
 TEST_DIR := tests
 BIN_DIR := bin
 OBJ_DIR := obj
+SAMPLE_DIR := code-samples
 
 SRC := $(wildcard $(SRC_DIR)/*.cc)
-HEADERS := $(wildcard $(INCLUDE_DIR)/*.hpp)
+HEADERS := $(wildcard $(INCLUDE_DIR)/*.h)
 
 SRC_NAMES := $(notdir $(SRC))
 OBJ := $(addprefix $(OBJ_DIR)/, $(SRC_NAMES:%.cc=%.o))
@@ -45,7 +46,9 @@ RESET := \033[0m
 GCOV_TRASH := $(GCOV_REPORT_NAME) $(GCOV_REPORT_NAME).info *.gcda *.gcno report  *.gch
 OTHER_TRASH := obj *.a a.out .*.swp .DS_Store $(NAME) units $(BIN_DIR)
 
-.DEFAULT_GOAL: $(NAME)
+.DEFAULT_GOAL := all
+
+all: $(NAME)
 
 $(NAME): $(OBJ_DIR) $(OBJ)
 	@ar rc $(NAME) $(OBJ)
@@ -75,16 +78,16 @@ fclean: clean clean_gcov
 	@echo "$(GRAY)$(CURSIVE)---$(NAME) staff is completely cleaned!\n$(RESET)"
 .PHONY: fclean
 
-re: fclean .DEFAULT_GOAL
+re: fclean all
 .PHONY: re
 
 #------------------------------------------------------------------------------#
 
-launch_main: .DEFAULT_GOAL
-	@$(CXX) -std=c++20  main.cc -L. $(NAME)
+launch_main: all
+	@$(CXX) -std=c++20 -I$(INCLUDE_DIR) $(SAMPLE_DIR)/sample_ringbuffer.cc -L. $(NAME)
 	@./a.out
 
-tests: .DEFAULT_GOAL $(BIN_DIR)
+tests: all $(BIN_DIR)
 	@$(CXX) -std=c++20  -I$(INCLUDE_DIR) $(TESTS) $(NAME) $(LDFLAGS) -o $(TESTS_BIN)
 .PHONY: test
 
