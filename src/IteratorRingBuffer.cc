@@ -5,7 +5,7 @@ RingBuffer<T>::Iterator::Iterator(std::vector<T>& buffer, size_t pos, size_t cou
 
 template <typename T>
 RingBuffer<T>::Iterator::reference RingBuffer<T>::Iterator::operator*() {
-	return buffer_[pos_];
+  return buffer_[pos_];
 }
 
 template <typename T>
@@ -31,7 +31,12 @@ RingBuffer<T>::Iterator RingBuffer<T>::Iterator::operator++(int) {
 
 template <typename T>
 bool RingBuffer<T>::Iterator::operator==(const Iterator& other) {
-	return count_ == other.count_ && pos_ == other.pos_;
+	return &buffer_ == &other.buffer_ && count_ == other.count_ && pos_ == other.pos_;
+}
+
+template <typename T>
+bool RingBuffer<T>::Iterator::operator!=(const Iterator& other) {
+  return !(*this == other);
 }
 
 template class RingBuffer<int>;

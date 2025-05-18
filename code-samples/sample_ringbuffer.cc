@@ -1,4 +1,4 @@
-#include <broker_system/RingBuffer.hpp>
+#include <broker_system/RingBuffer.h>
 
 int main() {
   RingBuffer<int> rbuf(100);

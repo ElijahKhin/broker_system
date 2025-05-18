@@ -33,10 +33,11 @@ class RingBuffer {
 			Iterator& operator++();
 			Iterator operator++(int);
 			bool operator==(const Iterator& other);
+			bool operator!=(const Iterator& other);
 
 
 		private:
-			std::vector<T> buffer_;
+			std::vector<T>& buffer_;
 			size_t pos_;
 			size_t count_;
 			size_t capacity_;

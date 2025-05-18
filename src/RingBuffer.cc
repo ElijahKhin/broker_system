@@ -66,10 +66,12 @@ void RingBuffer<T>::show() const {
 
 template <typename T>
 RingBuffer<T>::Iterator RingBuffer<T>::begin() {
-	Iterator(buffer_, front_, count_, capacity_);
+	return Iterator(buffer_, front_, count_, capacity_);
 };
 
 template <typename T>
 RingBuffer<T>::Iterator RingBuffer<T>::end() {
-	Iterator(buffer_, back_, 0, capacity_);
+	return Iterator(buffer_, back_, 0, capacity_);
 };
+
+template class RingBuffer<int>;

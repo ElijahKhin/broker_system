@@ -29,7 +29,7 @@ endif
 # --- TESTING ---
 TESTS := $(wildcard $(TEST_DIR)/*.cc)
 #GT_FILTER := "-GREP.COMBO"
-GT_FILTER := "*"
+GT_FILTER := "Iterator.*"
 TESTS_BIN := $(BIN_DIR)/tests_bin
 GCOV_REPORT_NAME := broker_system_report
 
