@@ -74,4 +74,12 @@ RingBuffer<T>::Iterator RingBuffer<T>::end() {
 	return Iterator(buffer_, back_, 0, capacity_);
 };
 
-template class RingBuffer<int>;
+template <typename T>
+RingBuffer<T>::ConstIterator RingBuffer<T>::cbegin() const {
+	return ConstIterator(buffer_, front_, count_, capacity_);
+};
+
+template <typename T>
+RingBuffer<T>::ConstIterator RingBuffer<T>::cend() const {
+	return ConstIterator(buffer_, back_, 0, capacity_);
+};

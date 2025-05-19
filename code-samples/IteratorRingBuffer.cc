@@ -30,13 +30,11 @@ RingBuffer<T>::Iterator RingBuffer<T>::Iterator::operator++(int) {
 }
 
 template <typename T>
-bool RingBuffer<T>::Iterator::operator==(const Iterator& other) {
+bool RingBuffer<T>::Iterator::operator==(const Iterator& other) const {
 	return &buffer_ == &other.buffer_ && count_ == other.count_ && pos_ == other.pos_;
 }
 
 template <typename T>
-bool RingBuffer<T>::Iterator::operator!=(const Iterator& other) {
+bool RingBuffer<T>::Iterator::operator!=(const Iterator& other) const {
   return !(*this == other);
 }
-
-template class RingBuffer<int>;

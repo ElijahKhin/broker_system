@@ -109,7 +109,6 @@ TEST(Iterator, ModifyThroughIterator) {
   for (auto& i : rbuf) {
     i *= 2;
   }
-
   std::vector<int> expected = {0, 2, 4};
   std::vector<int> actual;
   for (auto i : rbuf) actual.push_back(i);
