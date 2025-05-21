@@ -3,14 +3,19 @@
 
 #include <iostream>
 #include <vector>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 #define ERROR_RINGBUF_SIZE "Capacity must be greater than 0"
 template <typename T>
 class RingBuffer {
  public:
   explicit RingBuffer(size_t capacity);
-  bool push(const T& msg);
-  bool pop(T& msg);
+  void push(const T& msg);
+  void pop(T& msg);
+  bool try_push(const T& msg);
+  bool try_pop(T& msg);
   bool full() const;
   bool empty() const;
   void show() const;
@@ -28,8 +33,7 @@ class RingBuffer {
 
 			Iterator(std::vector<T>& buffer, size_t pos, size_t count, size_t capacity);
 
-			reference operator*();
-			pointer operator->();
+			reference operator*(); pointer operator->();
 			Iterator& operator++();
 			Iterator operator++(int);
 			bool operator==(const Iterator& other) const;
@@ -75,14 +79,15 @@ class RingBuffer {
 	ConstIterator cend() const;
 
  private:
+  mutable std::mutex mtx_;
+  std::condition_variable not_full_;
+  std::condition_variable not_empty_;
   std::vector<T> buffer_;
   size_t front_ = 0;
   size_t back_ = 0;
   size_t count_ = 0;
   size_t capacity_;
 };
-
-//template class RingBuffer<int>;
 
 // RingBuffer
 template <typename T>
@@ -95,54 +100,88 @@ RingBuffer<T>::RingBuffer(size_t capacity) {
 }
 
 template <typename T>
-bool RingBuffer<T>::push(const T& msg) {
-  if (full()) {
-    return false;
-  }
+void RingBuffer<T>::push(const T& msg) {
+  std::unique_lock<std::mutex> lock(mtx_);
+  not_full_.wait(lock, [this] () {return count_ < capacity_;} );
+
   buffer_[back_] = msg;
   ++count_;
   back_ = (back_ + 1) % capacity_;
-  return true;
+
+  not_empty_.notify_one();
 }
 
 template <typename T>
-bool RingBuffer<T>::pop(T& msg) {
-  if (empty()) {
-    return false;
+bool RingBuffer<T>::try_push(const T& msg) {
+  std::scoped_lock<std::mutex> lock(mtx_);
+  if (count_ < capacity_) {
+    buffer_[back_] = msg;
+    ++count_;
+    back_ = (back_ + 1) % capacity_;
+    not_empty_.notify_one();
+    return true;
   }
+  return false;
+}
+
+template <typename T>
+void RingBuffer<T>::pop(T& msg) {
+  std::unique_lock<std::mutex> lock(mtx_);
+  not_empty_.wait(lock, [this] () {return count_ != 0;});
+
   msg = buffer_[front_];
   --count_;
   front_ = (front_ + 1) % capacity_;
-  return true;
+
+  not_full_.notify_one();
+}
+
+template <typename T>
+bool RingBuffer<T>::try_pop(T& msg) {
+  std::scoped_lock<std::mutex> lock(mtx_);
+  if (count_) {
+    msg = buffer_[front_];
+    --count_;
+    front_ = (front_ + 1) % capacity_;
+    return true;
+    not_full_.notify_one();
+  }
+  return false;
 }
 
 template <typename T>
 size_t RingBuffer<T>::capacity() const {
+  std::scoped_lock<std::mutex> lock(mtx_);
   return capacity_ - 1;
 }
 
 template <typename T>
 size_t RingBuffer<T>::size() const {
+  std::scoped_lock<std::mutex> lock(mtx_);
   return count_;
 }
 
 template <typename T>
 size_t RingBuffer<T>::available() const {
+  std::scoped_lock<std::mutex> lock(mtx_);
   return (capacity_ - 1) - count_;
 }
 
 template <typename T>
 bool RingBuffer<T>::full() const {
+  std::scoped_lock<std::mutex> lock(mtx_);
   return (back_ + 1) % capacity_ == front_;
 }
 
 template <typename T>
 bool RingBuffer<T>::empty() const {
+  std::scoped_lock<std::mutex> lock(mtx_);
   return front_ == back_;
 }
 
 template <typename T>
 void RingBuffer<T>::show() const {
+  std::scoped_lock<std::mutex> lock(mtx_);
   for (size_t i = front_; i != back_; i = (i + 1) % capacity_) {
     std::cout << buffer_[i] << ' ';
   }
@@ -151,21 +190,25 @@ void RingBuffer<T>::show() const {
 
 template <typename T>
 RingBuffer<T>::Iterator RingBuffer<T>::begin() {
+  std::scoped_lock<std::mutex> lock(mtx_);
 	return Iterator(buffer_, front_, count_, capacity_);
 };
 
 template <typename T>
 RingBuffer<T>::Iterator RingBuffer<T>::end() {
+  std::scoped_lock<std::mutex> lock(mtx_);
 	return Iterator(buffer_, back_, 0, capacity_);
 };
 
 template <typename T>
 RingBuffer<T>::ConstIterator RingBuffer<T>::cbegin() const {
+  std::scoped_lock<std::mutex> lock(mtx_);
 	return ConstIterator(buffer_, front_, count_, capacity_);
 };
 
 template <typename T>
 RingBuffer<T>::ConstIterator RingBuffer<T>::cend() const {
+  std::scoped_lock<std::mutex> lock(mtx_);
 	return ConstIterator(buffer_, back_, 0, capacity_);
 };
 

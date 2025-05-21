@@ -28,8 +28,8 @@ endif
 
 # --- TESTING ---
 TESTS := $(wildcard $(TEST_DIR)/*.cc)
-#GT_FILTER := "-GREP.COMBO"
-GT_FILTER := "*"
+GT_FILTER := "SingleThread.*"
+#GT_FILTER := "*"
 TESTS_BIN := $(BIN_DIR)/tests_bin
 GCOV_REPORT_NAME := broker_system_report
 
@@ -84,7 +84,7 @@ re: fclean all
 #------------------------------------------------------------------------------#
 
 launch_main: all
-	@$(CXX) -std=c++20 -I$(INCLUDE_DIR) $(SAMPLE_DIR)/sample_ringbuffer.cc -L. $(NAME)
+	@$(CXX) -std=c++20 -I$(INCLUDE_DIR) $(SAMPLE_DIR)/mutex.cc -L. $(NAME)
 	@./a.out
 
 tests: all $(BIN_DIR)
