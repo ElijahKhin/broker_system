@@ -35,7 +35,7 @@ TEST(ConstIterator, ReferenceAccess) {
   getFilledBuffer(rbuf, 5);
 
   auto it = rbuf.cbegin();
-  ASSERT_EQ(it.operator->()[0], 0);  // same as *it
+  ASSERT_EQ(it.operator->()[0], 0);
 }
 
 TEST(ConstIterator, lhsIncrement) {
@@ -95,10 +95,6 @@ TEST(ConstIterator, CannotModify) {
   RingBuffer<int> rbuf(3);
   getFilledBuffer(rbuf, 3);
 
-  // This line should NOT compile if uncommented:
-  // for (auto& i : rbuf) i *= 2;
-
-  // Instead, confirm values stay unchanged via const iteration
   std::vector<int> expected = {0, 1, 2};
   std::vector<int> actual;
   for (auto it = rbuf.cbegin(); it != rbuf.cend(); ++it) {

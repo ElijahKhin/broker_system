@@ -3,15 +3,21 @@
 
 #include <iostream>
 #include <vector>
+#include <tuple>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <optional>
 
 #define ERROR_RINGBUF_SIZE "Capacity must be greater than 0"
+
+constexpr size_t kBufSizeLockMode = 3;
+
 template <typename T>
 class RingBuffer {
  public:
-  explicit RingBuffer(size_t capacity);
+  explicit RingBuffer(std::optional<size_t> capacity);
+
   void push(const T& msg);
   void pop(T& msg);
   bool try_push(const T& msg);
@@ -22,6 +28,7 @@ class RingBuffer {
   size_t size() const;
   size_t capacity() const;
   size_t available() const;
+  std::tuple<size_t, size_t, size_t> snapshot() const;
 
 	class Iterator {
 		public:
@@ -91,18 +98,23 @@ class RingBuffer {
 
 // RingBuffer
 template <typename T>
-RingBuffer<T>::RingBuffer(size_t capacity) {
-  if (capacity < 1) {
+RingBuffer<T>::RingBuffer(std::optional<size_t> capacity) {
+  if (capacity == std::nullopt) {
+    capacity_ = kBufSizeLockMode + 1; // 3 entries + 1 shadow-cell
+  }
+  else if (capacity < 1) {
     throw std::invalid_argument(ERROR_RINGBUF_SIZE);
   }
-  capacity_ = capacity + 1;
+  else if (capacity) {
+    capacity_ = *capacity + 1;
+  }
   buffer_.resize(capacity_);
 }
 
 template <typename T>
 void RingBuffer<T>::push(const T& msg) {
   std::unique_lock<std::mutex> lock(mtx_);
-  not_full_.wait(lock, [this] () {return count_ < capacity_;} );
+  not_full_.wait(lock, [this] () {return count_ < capacity_ - 1;} );
 
   buffer_[back_] = msg;
   ++count_;
@@ -114,7 +126,7 @@ void RingBuffer<T>::push(const T& msg) {
 template <typename T>
 bool RingBuffer<T>::try_push(const T& msg) {
   std::scoped_lock<std::mutex> lock(mtx_);
-  if (count_ < capacity_) {
+  if (count_ < capacity_ - 1) {
     buffer_[back_] = msg;
     ++count_;
     back_ = (back_ + 1) % capacity_;
@@ -143,8 +155,8 @@ bool RingBuffer<T>::try_pop(T& msg) {
     msg = buffer_[front_];
     --count_;
     front_ = (front_ + 1) % capacity_;
-    return true;
     not_full_.notify_one();
+    return true;
   }
   return false;
 }
@@ -186,6 +198,12 @@ void RingBuffer<T>::show() const {
     std::cout << buffer_[i] << ' ';
   }
   std::cout << '\n';
+}
+
+template <typename T>
+std::tuple<size_t, size_t, size_t> RingBuffer<T>::snapshot() const {
+  std::scoped_lock<std::mutex> lock(mtx_);
+  return {count_, (capacity_ - 1) - count_, capacity_ - 1};
 }
 
 template <typename T>

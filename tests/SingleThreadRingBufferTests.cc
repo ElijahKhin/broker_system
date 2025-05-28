@@ -2,6 +2,7 @@
 
 #include <broker_system/RingBuffer.h>
 #include <sstream>
+#include <chrono>
 
 static inline void getFilledBuffer(RingBuffer<int>& rbuf, size_t n) {
   for (int i = 0; i < n; ++i) rbuf.push(i);
@@ -12,6 +13,17 @@ TEST(SingleThread, ConstructorException) {
     RingBuffer<int> rbuf(0);
   } catch (std::invalid_argument& e) {
     ASSERT_EQ(std::string(ERROR_RINGBUF_SIZE), e.what());
+  }
+}
+
+TEST(SingleThread, ConstructorNoSize) {
+  RingBuffer<int> rbuf(std::nullopt);
+  getFilledBuffer(rbuf, 3);
+  std::vector<int> tst = {0, 1, 2};
+  for (auto i : tst) {
+    int p;
+    rbuf.pop(p);
+    ASSERT_EQ(i, p);
   }
 }
 
@@ -27,21 +39,18 @@ TEST(SingleThread, ConstructorNormal) {
   }
 }
 
-TEST(SingleThread, Push) {
+TEST(SingleThread, PushPop) {
   RingBuffer<int> rbuf(5);
   for (int i = 0; i < 5; ++i) {
-    ASSERT_TRUE(rbuf.push(i));
+    rbuf.push(i);
   }
-  ASSERT_FALSE(rbuf.push(5));
+  for (int i = 0; i < 5; ++i) {
+    int msg;
+    rbuf.pop(msg);
+    ASSERT_EQ(msg, i);
+  }
 }
 
-TEST(SingleThread, Pop) {
-  RingBuffer<int> rbuf(5);
-  int p;
-  ASSERT_FALSE(rbuf.pop(p));
-  rbuf.push(1);
-  ASSERT_TRUE(rbuf.pop(p));
-}
 
 TEST(SingleThread, Capacity) {
   RingBuffer<int> rbuf(3);
@@ -81,38 +90,55 @@ TEST(SingleThread, Show) {
   ASSERT_EQ(oss.str(), "0 1 2 \n");
 }
 
+TEST(SingleThread, TryPush) {
+  RingBuffer<int> rbuf(std::nullopt);
+  ASSERT_TRUE(rbuf.try_push(0));
+  ASSERT_TRUE(rbuf.try_push(0));
+  ASSERT_TRUE(rbuf.try_push(0));
+  ASSERT_FALSE(rbuf.try_push(0));
+}
+
+TEST(SingleThread, TryPop) {
+  int msg;
+  RingBuffer<int> rbuf(std::nullopt);
+  ASSERT_FALSE(rbuf.try_pop(msg));
+  ASSERT_TRUE(rbuf.try_push(0));
+  ASSERT_TRUE(rbuf.try_push(0));
+  ASSERT_TRUE(rbuf.try_push(0));
+  ASSERT_TRUE(rbuf.try_pop(msg));
+  ASSERT_TRUE(msg == 0);
+}
+
 TEST(SingleThread, WrapAround) {
   RingBuffer<int> rbuf(3);
 
-  ASSERT_TRUE(rbuf.push(1));
-  ASSERT_TRUE(rbuf.push(2));
-  ASSERT_TRUE(rbuf.push(3));
+  rbuf.push(1);
+  rbuf.push(2);
+  rbuf.push(3);
 
   ASSERT_TRUE(rbuf.full());
 
-  ASSERT_FALSE(rbuf.push(4));
-
   int out;
-  ASSERT_TRUE(rbuf.pop(out));
+  rbuf.pop(out);
   ASSERT_EQ(out, 1);
-  ASSERT_TRUE(rbuf.pop(out));
+  rbuf.pop(out);
   ASSERT_EQ(out, 2);
 
-  ASSERT_TRUE(rbuf.push(4));
-  ASSERT_TRUE(rbuf.push(5));
-  ASSERT_FALSE(rbuf.push(6));
+  rbuf.push(4);
+  rbuf.push(5);
 
-  ASSERT_TRUE(rbuf.pop(out));
+  rbuf.pop(out);
   ASSERT_EQ(out, 3);
-  ASSERT_TRUE(rbuf.pop(out));
+  rbuf.pop(out);
   ASSERT_EQ(out, 4);
-  ASSERT_TRUE(rbuf.pop(out));
+  rbuf.pop(out);
   ASSERT_EQ(out, 5);
 
   ASSERT_TRUE(rbuf.empty());
 }
 
 int main(int argc, char** argv) {
+//  std::ios::sync_with_stdio(false);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
