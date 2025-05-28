@@ -66,20 +66,20 @@ void RingBuffer<T>::show() const {
 
 template <typename T>
 RingBuffer<T>::Iterator RingBuffer<T>::begin() {
-	return Iterator(buffer_, front_, count_, capacity_);
+  return Iterator(buffer_, front_, count_, capacity_);
 };
 
 template <typename T>
 RingBuffer<T>::Iterator RingBuffer<T>::end() {
-	return Iterator(buffer_, back_, 0, capacity_);
+  return Iterator(buffer_, back_, 0, capacity_);
 };
 
 template <typename T>
 RingBuffer<T>::ConstIterator RingBuffer<T>::cbegin() const {
-	return ConstIterator(buffer_, front_, count_, capacity_);
+  return ConstIterator(buffer_, front_, count_, capacity_);
 };
 
 template <typename T>
 RingBuffer<T>::ConstIterator RingBuffer<T>::cend() const {
-	return ConstIterator(buffer_, back_, 0, capacity_);
+  return ConstIterator(buffer_, back_, 0, capacity_);
 };

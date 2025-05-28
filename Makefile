@@ -103,11 +103,11 @@ leaks: tests
 .PHONY: leaks
 
 correct_format:
-	@clang-format -i $(shell find . -name "*.cc" -o -name "*.hpp")
+	@clang-format -i $(shell find . -name "*.cc" -o -name "*.h" -o -name "*.tpp")
 .PHONY: correct_format
 
 check_format:
-	@clang-format --dry-run --Werror $(shell find . -name "*.cc" -o -name "*.hpp")
+	@clang-format --dry-run --Werror $(shell find . -name "*.cc" -o -name "*.h" -o -name "*.tpp")
 .PHONY: check_format
 	
 report/index.html: tests

@@ -1,16 +1,15 @@
-#include <gtest/gtest.h>
-#include <algorithm>
-#include <sstream>
-#include <numeric>
-
 #include <broker_system/RingBuffer.h>
+#include <gtest/gtest.h>
+
+#include <algorithm>
+#include <numeric>
+#include <sstream>
 
 static inline void getFilledBuffer(RingBuffer<int>& rbuf, size_t n) {
   for (int i = 0; i < n; ++i) {
     rbuf.push(i);
-  }; 
+  };
 }
-
 
 TEST(ConstIterator, Constructor) {
   RingBuffer<int> rbuf(10);
@@ -123,4 +122,3 @@ TEST(ConstIterator, STL_compatible) {
   int sum = std::accumulate(rbuf.cbegin(), rbuf.cend(), 0);
   ASSERT_EQ(sum, 6);
 }
-

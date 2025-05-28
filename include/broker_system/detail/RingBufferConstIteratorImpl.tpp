@@ -1,5 +1,3 @@
-#include <broker_system/RingBuffer.h>
-
 template <typename T>
 RingBuffer<T>::ConstIterator::ConstIterator(const std::vector<T>& buffer,
                                             size_t pos, size_t count,

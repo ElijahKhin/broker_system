@@ -1,14 +1,14 @@
-#include <gtest/gtest.h>
-#include <algorithm>
-#include <sstream>
-#include <numeric>
-
 #include <broker_system/RingBuffer.h>
+#include <gtest/gtest.h>
+
+#include <algorithm>
+#include <numeric>
+#include <sstream>
 
 static inline void getFilledBuffer(RingBuffer<int>& rbuf, size_t n) {
   for (int i = 0; i < n; ++i) {
     rbuf.push(i);
-  }; 
+  };
 }
 
 TEST(Iterator, Constructor) {

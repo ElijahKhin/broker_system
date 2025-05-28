@@ -1,56 +1,55 @@
+#include <broker_system/RingBuffer.h>
 #include <gtest/gtest.h>
+
 #include <algorithm>
-#include <sstream>
+#include <atomic>
 #include <numeric>
 #include <random>
-#include <atomic>
-
-#include <broker_system/RingBuffer.h>
-
+#include <sstream>
 
 std::mutex cout_mtx;
 
 int gen_random_int(int min, int max) {
   std::mt19937 gen(std::random_device{}());
   std::uniform_int_distribution<> dist(min, max);
-  return dist(gen); 
+  return dist(gen);
 }
 
-//void rbuf_push(RingBuffer<int>& rbuf, std::atomic<int>& push_sum, size_t n) {
-//  for (int i = 0; i < n; ++i) {
-//    int random = gen_random_int(1, 100);
-//    rbuf.push(random);
-//    push_sum += random;
-//  }
-//}
+// void rbuf_push(RingBuffer<int>& rbuf, std::atomic<int>& push_sum, size_t n) {
+//   for (int i = 0; i < n; ++i) {
+//     int random = gen_random_int(1, 100);
+//     rbuf.push(random);
+//     push_sum += random;
+//   }
+// }
 //
-//void rbuf_pop(RingBuffer<int>& rbuf, std::atomic<int>& pop_sum, size_t n) {
-//  for (int i = 0; i < n; ++i) {
-//    int msg;
-//    rbuf.pop(msg);
-//    pop_sum += msg;
-//  }
-//}
+// void rbuf_pop(RingBuffer<int>& rbuf, std::atomic<int>& pop_sum, size_t n) {
+//   for (int i = 0; i < n; ++i) {
+//     int msg;
+//     rbuf.pop(msg);
+//     pop_sum += msg;
+//   }
+// }
 
 TEST(MultiThread, WaitReader) {
   std::atomic<int> push_sum(0), pop_sum(0);
   size_t n = 1100;
   RingBuffer<int> rbuf(n - 834);
 
-  auto producer = [&] () {
+  auto producer = [&]() {
     for (int i = 0; i < n; ++i) {
       int random = gen_random_int(1, 100);
       rbuf.push(random);
       push_sum += random;
-    } 
+    }
   };
 
-  auto consumer = [&] () {
+  auto consumer = [&]() {
     for (int i = 0; i < n; ++i) {
       int msg;
       rbuf.pop(msg);
       pop_sum += msg;
-    } 
+    }
   };
 
   std::thread t1(producer);
@@ -114,23 +113,23 @@ TEST(MultiThread, ConcurrentStateChecks) {
       std::this_thread::sleep_for(std::chrono::microseconds(1));
     }
   });
-  
+
   std::thread state_checker1([&]() {
-  while (!done || !rbuf.empty()) {
-    auto [size, avail, cap] = rbuf.snapshot();
-    EXPECT_LE(size, cap);
-    EXPECT_LE(avail, cap);
-    EXPECT_EQ(size + avail, cap);
-  }
+    while (!done || !rbuf.empty()) {
+      auto [size, avail, cap] = rbuf.snapshot();
+      EXPECT_LE(size, cap);
+      EXPECT_LE(avail, cap);
+      EXPECT_EQ(size + avail, cap);
+    }
   });
 
   std::thread state_checker2([&]() {
-  while (!done || !rbuf.empty()) {
-    auto [size, avail, cap] = rbuf.snapshot();
-    EXPECT_LE(size, cap);
-    EXPECT_LE(avail, cap);
-    EXPECT_EQ(size + avail, cap);
-  }
+    while (!done || !rbuf.empty()) {
+      auto [size, avail, cap] = rbuf.snapshot();
+      EXPECT_LE(size, cap);
+      EXPECT_LE(avail, cap);
+      EXPECT_EQ(size + avail, cap);
+    }
   });
 
   writer.join();
@@ -138,4 +137,3 @@ TEST(MultiThread, ConcurrentStateChecks) {
   state_checker1.join();
   state_checker2.join();
 }
-

@@ -7,8 +7,7 @@ int main() {
   opt = "Hi";
   if (opt) {
     std::cout << "Opt: " << *opt << '\n';
-  }
-  else {
+  } else {
     std::cout << "No opt" << '\n';
   }
   return 0;

@@ -1,8 +1,8 @@
+#include <broker_system/RingBuffer.h>
 #include <gtest/gtest.h>
 
-#include <broker_system/RingBuffer.h>
-#include <sstream>
 #include <chrono>
+#include <sstream>
 
 static inline void getFilledBuffer(RingBuffer<int>& rbuf, size_t n) {
   for (int i = 0; i < n; ++i) rbuf.push(i);
@@ -50,7 +50,6 @@ TEST(SingleThread, PushPop) {
     ASSERT_EQ(msg, i);
   }
 }
-
 
 TEST(SingleThread, Capacity) {
   RingBuffer<int> rbuf(3);
@@ -138,7 +137,7 @@ TEST(SingleThread, WrapAround) {
 }
 
 int main(int argc, char** argv) {
-//  std::ios::sync_with_stdio(false);
+  //  std::ios::sync_with_stdio(false);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
